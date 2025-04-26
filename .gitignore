@@ -1,0 +1,6 @@
+build
+build/
+examples/flet_painter_example/build
+examples/flet_painter_example/build/
+venv
+venv/
