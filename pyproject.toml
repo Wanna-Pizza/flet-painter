@@ -29,7 +29,7 @@ dev-dependencies = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-flet = {extras = ["all"], version = "0.27.6"}
+flet = {extras = ["all"], version = "v1"}
 mkdocs = "*"
 mkdocstrings = { extras = ["python"], version = "*" }
 mkdocs-material = "*"
