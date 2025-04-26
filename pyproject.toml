@@ -13,9 +13,9 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://mydomain.dev"
-Documentation = "https://github.com/MyGithubAccount/flet-painter"
-Repository = "https://github.com/MyGithubAccount/flet-painter"
-Issues = "https://github.com/MyGithubAccount/flet-painter/issues"
+Documentation = "https://github.com/Wanna-Pizza/flet-painter"
+Repository = "https://github.com/Wanna-Pizza/flet-painter"
+Issues = "https://github.com/Wanna-Pizza/flet-painter/issues"
 
 [tool.setuptools.package-data]
 "flutter.flet_painter" = ["**/*"]

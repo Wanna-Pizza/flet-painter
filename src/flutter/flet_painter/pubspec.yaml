@@ -1,8 +1,8 @@
 name: flet_painter
 description: Flet FletPainter control
-repository: https://github.com/MyGithubAccount/flet-painter/src/flutter/flet_painter
+repository: https://github.com/Wanna-Pizza/flet-painter/src/flutter/flet_painter
 version: 0.1.0
-homepage: https://github.com/MyGithubAccount/flet-painter
+homepage: https://github.com/Wanna-Pizza/flet-painter
 
 environment:
   sdk: '>=3.3.0 <4.0.0'

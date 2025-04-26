@@ -11,7 +11,7 @@ Link to git repository:
 
 ```
 dependencies = [
-  "flet-painter @ git+https://github.com/MyGithubAccount/flet-painter",
+  "flet-painter @ git+https://github.com/Wanna-Pizza/flet-painter",
   "flet>=0.27.6",
 ]
 ```
@@ -34,4 +34,4 @@ flet build macos -v
 
 ## Documentation
 
-[Link to documentation](https://MyGithubAccount.github.io/flet-painter/)
+[Link to documentation](https://Wanna-Pizza.github.io/flet-painter/)
