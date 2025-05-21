@@ -39,22 +39,16 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
     """
     A control that allows dropping files.
     """
-    layers: Optional[list[ImageWidget | TextWidget]] = field(default_factory=list)
+    # Modify the layers type to accept any dict or list objects, not just specific classes
+    layers: Optional[list] = field(default_factory=list)
     on_selected_text: ft.OptionalEventCallable["TextEvent"] = None
-    
-
-
-
-
-
-
-
 
     async def async_add_text(self, **args) -> None:
         
         await self._invoke_method_async(
             "addText",
             {
+                "font_family": args.get("font_family"),
                 "text": args.get("text"),
                 "x": args.get("x"),
                 "y": args.get("y"),
@@ -73,7 +67,7 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
                 "y": args.get("y"),
                 "font_size": args.get("font_size"),
                 "color": args.get("color"),
-                "font_weight": args.get("font_weight"),
+                "fontFamily": args.get("font_family"),
             }
         )
     async def async_add_image(self,**args):
@@ -98,6 +92,7 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
         )
     def add_text(self,
                 text: str = None,
+                font_family: Optional[str] = None,
                 x: Optional[float] = None,
                 y: Optional[float] = None,
                 font_size: Optional[float] = None,
@@ -106,6 +101,7 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
         asyncio.create_task(
             self.async_add_text(
                 text=text,
+                font_family=font_family,
                 x=x,
                 y=y,
                 font_size=font_size,
@@ -115,18 +111,19 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
         )
     def change_text(self,
                 text: str = None,
+                font_family: Optional[str] = None,
                 x: Optional[float] = None,
                 y: Optional[float] = None,
                 font_size: Optional[float] = None,
-                color: Optional[ft.Colors] = None,
-                font_weight: Optional[str] = None) -> None:
+                color: Optional[ft.Colors] = None) -> None:
+        print(font_family)
         asyncio.create_task(
             self.async_change_text(
                 text=text,
+                font_family=font_family,
                 x=x,
                 y=y,
                 font_size=font_size,
                 color=color,
-                font_weight=font_weight
             )
         )

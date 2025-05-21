@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flet/flet.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flet_painter/src/flutter_painter_v2/flutter_painter.dart';
@@ -18,148 +19,90 @@ class FletPainterControl extends StatefulWidget {
 }
 
 class _FletPainterControlState extends State<FletPainterControl> {
-  late PainterController controller;
-  Size? canvasSize;
-  final FocusNode _focusNode = FocusNode();
-  String defaultText = "Text"; // Default text value
-  dynamic previousLayers; // Track previously processed layers
-  List<String> processedLayerIds = []; // Track processed layer IDs
+  // Constants
+  static const String _defaultText = "Text";
+  static const double _defaultFontSize = 24.0;
+  static const String _defaultFontFamily = 'Roboto';
 
-  void sendEvent(String name, [dynamic data]) {
-    widget.control.triggerEvent(name, data);
-  }
+  // Controllers and state
+  late PainterController controller;
+  final FocusNode _focusNode = FocusNode();
+  Size? canvasSize;
+  String defaultText = _defaultText;
+
+  // Layer tracking
+  final LayerManager _layerManager = LayerManager();
 
   @override
   void initState() {
     super.initState();
-    controller = PainterController();
-    controller.addListener(() {
-      final sel = controller.selectedObjectDrawable;
-      if (sel is TextDrawable) {
-        sendSelectedTextInfo();
-      }
-    });
+    _initController();
     _setupWidgets();
-    widget.control.addInvokeMethodListener(_invokeMethod);
+    widget.control.addInvokeMethodListener(_handleInvokeMethod);
+  }
 
-    // Initialize with text settings
+  void _initController() {
+    controller = PainterController();
+    controller.addListener(_handleControllerUpdate);
+
+    // Initialize text settings
     controller.textSettings = TextSettings(
       textStyle: const TextStyle(
         fontWeight: FontWeight.bold,
         color: Colors.blue,
-        fontSize: 24,
+        fontSize: _defaultFontSize,
       ),
     );
   }
 
-  void updateTextDrawable({
-    String? newText,
-    double? newFontSize,
-    Color? newColor,
-    FontWeight? newFontWeight,
-  }) {
-    final selectedDrawable = controller.selectedObjectDrawable;
-
-    if (selectedDrawable is TextDrawable) {
-      final updatedDrawable = TextDrawable(
-        position: selectedDrawable.position,
-        text: newText ?? selectedDrawable.text,
-        style: TextStyle(
-          color: newColor ?? selectedDrawable.style.color,
-          fontSize: newFontSize ?? selectedDrawable.style.fontSize,
-          fontWeight: newFontWeight ?? selectedDrawable.style.fontWeight,
-        ),
-      );
-
-      // Replace the old drawable with the updated one
-      controller.replaceDrawable(selectedDrawable, updatedDrawable);
-    } else {
-      print("No TextDrawable selected or invalid drawable type.");
+  void _handleControllerUpdate() {
+    final sel = controller.selectedObjectDrawable;
+    if (sel is TextDrawable) {
+      _sendSelectedTextInfo();
     }
-  }
-
-  void sendSelectedTextInfo() {
-    final selectedDrawable = controller.selectedObjectDrawable;
-
-    if (selectedDrawable is TextDrawable) {
-      sendEvent("on_selected_text", {
-        "value": selectedDrawable.text,
-        "style": selectedDrawable.style,
-      });
-    } else {
-      sendEvent("on_selected_text", {
-        "value": null,
-        "style": null,
-      });
-    }
-  }
-
-  void _setupWidgets() {
-    var layersData = widget.control.get("layers");
-
-    if (layersData == null) return;
-
-    if (layersData is List) {
-      for (var layer in layersData) {
-        String id = layer["id"] ??
-            "${layer.hashCode}"; // Generate id from hashcode if not provided
-        if (processedLayerIds.contains(id)) continue;
-
-        String type = layer["type"] ?? "";
-
-        if (type == "text") {
-          defaultText = layer["text"] ?? defaultText;
-          addText(
-              text: defaultText,
-              color: parseColor(layer["color"], Theme.of(context)),
-              fontSize: parseDouble(layer["fontSize"]),
-              fontWeight: getFontWeight(layer["fontWeight"]));
-        } else if (type == "image") {
-          addImage(
-            path: layer["path"] ?? "",
-          );
-        }
-
-        processedLayerIds.add(id); // Mark layer as processed
-      }
-    } else if (layersData is Map<String, dynamic>) {
-      String id = layersData["id"] ??
-          "${layersData.hashCode}"; // Generate id from hashcode if not provided
-      if (processedLayerIds.contains(id))
-        return; // Skip already processed layer
-
-      String type = layersData["type"] ?? "";
-
-      if (type == "text") {
-        defaultText = layersData["text"] ?? defaultText;
-        addText(text: defaultText);
-      } else if (type == "image") {
-        addImage(path: layersData["path"] ?? "");
-      }
-
-      processedLayerIds.add(id); // Mark layer as processed
-    }
-
-    // Update previousLayers to track what has been processed
-    previousLayers = layersData;
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
     controller.dispose();
-    widget.control.removeInvokeMethodListener(_invokeMethod);
+    widget.control.removeInvokeMethodListener(_handleInvokeMethod);
     super.dispose();
   }
 
-  // Helper method to get the center of the canvas
-  Offset get canvasCenter {
+  // ===== Event Methods =====
+
+  void _sendEvent(String name, [dynamic data]) {
+    widget.control.triggerEvent(name, data);
+  }
+
+  void _sendSelectedTextInfo() {
+    final selectedDrawable = controller.selectedObjectDrawable;
+
+    if (selectedDrawable is TextDrawable) {
+      _sendEvent("on_selected_text", {
+        "value": selectedDrawable.text,
+        "style": selectedDrawable.style,
+      });
+    } else {
+      _sendEvent("on_selected_text", {
+        "value": null,
+        "style": null,
+      });
+    }
+  }
+
+  // ===== Canvas Helper Methods =====
+
+  Offset get _canvasCenter {
     if (canvasSize == null) return const Offset(100, 100);
     return Offset(canvasSize!.width / 2, canvasSize!.height / 2);
   }
 
-  // Function to add text to the canvas
+  // ===== Text Handling Methods =====
+
   void addText({
+    String? fontFamily,
     String? text,
     double? x,
     double? y,
@@ -168,24 +111,80 @@ class _FletPainterControlState extends State<FletPainterControl> {
     FontWeight? fontWeight,
   }) {
     final position = Offset(
-      x ?? canvasCenter.dx, // Default to center if x is null
-      y ?? canvasCenter.dy, // Default to center if y is null
+      x ?? _canvasCenter.dx,
+      y ?? _canvasCenter.dy,
     );
 
     final textDrawable = TextDrawable(
       position: position,
-      text: text ?? defaultText, // Use default text if no text is provided
-      style: TextStyle(
-        color: color ?? Colors.red, // Default color
-        fontSize: fontSize ?? 30, // Default font size
-        fontWeight: fontWeight ?? FontWeight.bold, // Default font weight
+      text: text ?? defaultText,
+      style: GoogleFonts.getFont(
+        fontFamily ?? _defaultFontFamily,
+        fontSize: fontSize ?? _defaultFontSize,
+        color: color ?? Colors.black,
+        fontWeight: fontWeight ?? FontWeight.normal,
       ),
     );
 
     controller.addDrawables([textDrawable]);
   }
 
-  // Function to add image to the canvas
+  void updateTextDrawable({
+    String? newText,
+    String? newFontFamily,
+    double? newFontSize,
+    Color? newColor,
+    FontWeight? newFontWeight,
+    double? newRotation,
+    double? newScale,
+  }) {
+    final selectedDrawable = controller.selectedObjectDrawable;
+
+    if (selectedDrawable is TextDrawable) {
+      final baseStyle = selectedDrawable.style;
+
+      // Always preserve existing values when not explicitly set
+      final updatedText = newText ?? selectedDrawable.text;
+      final updatedRotation = newRotation ?? selectedDrawable.rotationAngle;
+      final updatedScale = newScale ?? selectedDrawable.scale;
+
+      TextStyle updatedStyle;
+      if (newFontFamily != null) {
+        // rebuild style with new font family
+        updatedStyle = GoogleFonts.getFont(
+          newFontFamily,
+          fontSize: newFontSize ?? baseStyle.fontSize,
+          color: newColor ?? baseStyle.color,
+          fontWeight: newFontWeight ?? baseStyle.fontWeight,
+        );
+      } else {
+        // preserve existing font family, apply other changes
+        updatedStyle = baseStyle.copyWith(
+          color: newColor,
+          fontSize: newFontSize,
+          fontWeight: newFontWeight,
+        );
+      }
+
+      // Create updated drawable with all preserved properties
+      final updatedDrawable = selectedDrawable.copyWith(
+        text: updatedText,
+        style: updatedStyle,
+        rotation: updatedRotation,
+        scale: updatedScale,
+      );
+
+      // Update immediately with setState to ensure UI refresh
+      setState(() {
+        controller.replaceDrawable(selectedDrawable, updatedDrawable);
+      });
+    } else {
+      print("No TextDrawable selected or invalid drawable type.");
+    }
+  }
+
+  // ===== Image Handling Methods =====
+
   Future<void> addImage({
     required String path,
     double? x,
@@ -204,8 +203,8 @@ class _FletPainterControlState extends State<FletPainterControl> {
       final uiImage = frame.image;
 
       final position = Offset(
-        x ?? canvasCenter.dx,
-        y ?? canvasCenter.dy,
+        x ?? _canvasCenter.dx,
+        y ?? _canvasCenter.dy,
       );
 
       final imageDrawable = ImageDrawable(
@@ -219,20 +218,79 @@ class _FletPainterControlState extends State<FletPainterControl> {
     }
   }
 
-  // Helper method to delete selected drawable
-  void deleteSelected() {
-    final selectedDrawable = controller.selectedObjectDrawable;
-    if (selectedDrawable != null) {
-      controller.removeDrawable(selectedDrawable);
+  // ===== Layer Management =====
+
+  void _setupWidgets() {
+    var layersData = widget.control.get("layers");
+    if (layersData == null) return;
+
+    _processLayers(layersData);
+  }
+
+  void _processLayers(dynamic layersData) {
+    if (layersData is List) {
+      _processLayersList(layersData);
+    } else if (layersData is Map<String, dynamic>) {
+      _processSingleLayer(layersData);
+    }
+
+    // Update tracking
+    _layerManager.previousLayers = layersData;
+  }
+
+  void _processLayersList(List layers) {
+    for (var layer in layers) {
+      String id = layer["id"] ?? "${layer.hashCode}";
+      if (_layerManager.isProcessed(id)) continue;
+
+      _processSingleLayer(layer);
+      _layerManager.markProcessed(id);
     }
   }
 
-  Future<dynamic> _invokeMethod(String name, dynamic args) async {
+  void _processSingleLayer(Map<String, dynamic> layer) {
+    String id = layer["id"] ?? "${layer.hashCode}";
+    if (_layerManager.isProcessed(id)) return;
+
+    String type = layer["type"] ?? "";
+
+    if (type == "text") {
+      defaultText = layer["text"] ?? defaultText;
+      addText(
+        text: defaultText,
+        color: parseColor(layer["color"], Theme.of(context)),
+        fontSize: parseDouble(layer["fontSize"]),
+        fontWeight: getFontWeight(layer["fontWeight"]),
+      );
+    } else if (type == "image") {
+      addImage(path: layer["path"] ?? "");
+    }
+
+    _layerManager.markProcessed(id);
+  }
+
+  // ===== Deletion Methods =====
+
+  void deleteSelected() {
+    final selectedDrawable = controller.selectedObjectDrawable;
+    if (selectedDrawable != null) {
+      setState(() {
+        controller.removeDrawable(selectedDrawable);
+      });
+      // Restore focus after deletion
+      _focusNode.requestFocus();
+    }
+  }
+
+  // ===== Method Invocation Handling =====
+
+  Future<dynamic> _handleInvokeMethod(String name, dynamic args) async {
     var theme = Theme.of(context);
     switch (name) {
       case "addText":
         addText(
           text: args["text"],
+          fontFamily: args["fontFamily"],
           x: parseDouble(args["x"]),
           y: parseDouble(args["y"]),
           fontSize: parseDouble(args["fontSize"]),
@@ -250,13 +308,18 @@ class _FletPainterControlState extends State<FletPainterControl> {
       case "changeText":
         updateTextDrawable(
           newText: args["text"],
+          newFontFamily: args["fontFamily"],
           newFontSize: parseDouble(args["fontSize"]),
           newColor: parseColor(args["color"], theme),
           newFontWeight: getFontWeight(args["fontWeight"]),
+          newRotation: parseDouble(args["rotation"]),
+          newScale: parseDouble(args["scale"]),
         );
         break;
     }
   }
+
+  // ===== Widget Building =====
 
   @override
   Widget build(BuildContext context) {
@@ -265,29 +328,85 @@ class _FletPainterControlState extends State<FletPainterControl> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
-
-          return KeyboardListener(
-            focusNode: _focusNode,
-            autofocus: true,
-            onKeyEvent: (KeyEvent event) {
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.keyX &&
-                  (HardwareKeyboard.instance.isControlPressed ||
-                      HardwareKeyboard.instance.isMetaPressed)) {
-                deleteSelected();
-              }
-            },
-            child: GestureDetector(
-              child: FlutterPainter(
-                controller: controller,
-                onSelectedObjectDrawableChanged: (drawable) {
-                  sendSelectedTextInfo();
-                },
-              ),
-            ),
-          );
+          return _buildKeyboardHandler();
         },
       ),
     );
   }
+
+  Widget _buildKeyboardHandler() {
+    return Focus(
+      focusNode: _focusNode,
+      autofocus: true,
+      onKeyEvent: _handleKeyEvent,
+      child: _buildShortcutsWrapper(),
+    );
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.keyX &&
+        (HardwareKeyboard.instance.isControlPressed ||
+            HardwareKeyboard.instance.isMetaPressed)) {
+      deleteSelected();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  Widget _buildShortcutsWrapper() {
+    return Shortcuts(
+      shortcuts: <ShortcutActivator, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyX):
+            const DeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyX):
+            const DeleteIntent(),
+      },
+      child: _buildActionsWrapper(),
+    );
+  }
+
+  Widget _buildActionsWrapper() {
+    return Actions(
+      actions: <Type, Action<Intent>>{
+        DeleteIntent: CallbackAction<DeleteIntent>(
+          onInvoke: (intent) {
+            deleteSelected();
+            return null;
+          },
+        ),
+      },
+      child: _buildPainter(),
+    );
+  }
+
+  Widget _buildPainter() {
+    return GestureDetector(
+      onTap: () => _focusNode.requestFocus(),
+      child: FlutterPainter(
+        controller: controller,
+        onSelectedObjectDrawableChanged: (drawable) {
+          _sendSelectedTextInfo();
+          _focusNode.requestFocus();
+        },
+      ),
+    );
+  }
+}
+
+// ===== Helper Classes =====
+
+class LayerManager {
+  dynamic previousLayers;
+  final List<String> processedLayerIds = [];
+
+  bool isProcessed(String id) => processedLayerIds.contains(id);
+
+  void markProcessed(String id) {
+    processedLayerIds.add(id);
+  }
+}
+
+class DeleteIntent extends Intent {
+  const DeleteIntent();
 }

@@ -24,7 +24,7 @@ Link to git repository:
 
 ```
 dependencies = [
-  "flet-painter @ git+https://github.com/hubAccount/flet-painter",
+  "flet-painter @ git+https://github.com/Wanna-Pizza/flet-painter",
   "flet>=0.27.6",
 ]
 ```

@@ -2,6 +2,7 @@ README.md
 pyproject.toml
 src/flet_painter/__init__.py
 src/flet_painter/flet_painter.py
+src/flet_painter/google_fonts.py
 src/flet_painter.egg-info/PKG-INFO
 src/flet_painter.egg-info/SOURCES.txt
 src/flet_painter.egg-info/dependency_links.txt
