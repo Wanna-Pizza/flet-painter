@@ -3,6 +3,30 @@ import flet as ft
 from flet_painter import FletPainter, ImageWidget, TextWidget
 from flet_painter.google_fonts import GoogleFont
 from main import DropDownFonts
+
+
+
+def rgb_to_hex(r, g, b):
+    """
+    Convert RGB color values to hexadecimal color code.
+    
+    Args:
+        r (int): Red component (0-255)
+        g (int): Green component (0-255)
+        b (int): Blue component (0-255)
+        
+    Returns:
+        str: Hexadecimal color code in the format '#RRGGBB'
+    """
+    # Ensure the values are within valid range
+    r = max(0, min(255, r))
+    g = max(0, min(255, g))
+    b = max(0, min(255, b))
+    
+    # Convert to hex and format as #RRGGBB
+    return f'#{r:02x}{g:02x}{b:02x}'
+
+
 class ToolBarButton(ft.Container):
     def __init__(self,icon,on_click = None):
         super().__init__()
@@ -41,7 +65,7 @@ class SettingsField(ft.Container):
 
 
 class ToolBar(ft.Container):
-    def __init__(self,on_text_created=None):
+    def __init__(self,on_text_created=None, on_image_created=None):
         super().__init__()
         self.width = 60
         self.height = 120
@@ -51,13 +75,14 @@ class ToolBar(ft.Container):
         self.border = ft.Border.only(top=ft.BorderSide(1,'white,0.1'))
         self.shadow = ft.BoxShadow(spread_radius=5, blur_radius=10, color='black,0.02')
         self.on_text_created = on_text_created
+        self.on_image_created = on_image_created
         self.content = self.__content()    
 
         self.alignment = ft.Alignment.center()
     def __content(self):
         return ft.Column([
             ToolBarButton(ft.Icons.TEXT_FIELDS,on_click=self.on_text_created),
-            ToolBarButton(ft.Icons.IMAGE),
+            ToolBarButton(ft.Icons.IMAGE,on_click=self.on_image_created),
         ],alignment=ft.MainAxisAlignment.SPACE_EVENLY,spacing=10)
 
 class Phone(ft.Container):
@@ -84,7 +109,13 @@ class Phone(ft.Container):
         self.painter = FletPainter(
             expand=True,
         )
-        return self.painter 
+        return ft.Stack([
+            self.painter,
+            ft.Row([
+                ft.Container(width=100,height=30,border_radius=20,bgcolor='black',offset=[0,0.5]),
+                
+                ],alignment=ft.MainAxisAlignment.CENTER,spacing=0),
+        ])
 
 class Designer(ft.Container):
     def __init__(self):
@@ -115,8 +146,14 @@ class Designer(ft.Container):
         self.phone.painter.add_text(
             text="Hello World",
             font_size=20,
-            color='white,0.5',
+            color=rgb_to_hex(134,134,134),
             font_weight='bold'
+        )
+        self.phone.painter.update()
+    
+    def __add_image(self,e):
+        self.phone.painter.add_image(
+            path=r"C:\Users\MF\Downloads\CLOWN1.png",
         )
         self.phone.painter.update()
     
@@ -156,20 +193,36 @@ class Designer(ft.Container):
             ],expand=2)
         ],expand=2)
         return self.stack_settings
+
+    def __save_image(self,e):
+        print("Saving image...")
+        self.phone.painter.save_image(
+            path=r"C:\Users\MF\Downloads\test_save\test_save.png",
+            scale=10.0,
+        )
+        self.phone.painter.update()
+    
+    
     def left_side(self):
+        button = ft.ElevatedButton(
+            content=ft.Text("Save",color='white,0.5'),
+            on_click=self.__save_image
+        )
         return ft.Container(
             bgcolor='white,0.03',
             border_radius=10,
             expand=2,
             alignment=ft.Alignment.center(),
             border=ft.Border.all(1,'white,0.1'),
-            content=ft.Text("Future content")
+            content=button
         )
     
 
     def __content(self):
         self.phone = Phone()
-        main_phone = ft.Row([self.phone, ToolBar(on_text_created=self.__add_text)],alignment=ft.MainAxisAlignment.CENTER,spacing=20)
+        main_phone = ft.Row([self.phone, ToolBar(
+            on_text_created=self.__add_text,
+            on_image_created=self.__add_image)],alignment=ft.MainAxisAlignment.CENTER,spacing=20)
         return ft.Row([
             self.left_side(),
             ft.Container(expand=1),

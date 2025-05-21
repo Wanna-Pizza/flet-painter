@@ -192,6 +192,7 @@ class _FletPainterControlState extends State<FletPainterControl> {
   }) async {
     try {
       final file = File(path);
+
       if (!file.existsSync()) {
         print('Image file not found: $path');
         return;
@@ -215,6 +216,39 @@ class _FletPainterControlState extends State<FletPainterControl> {
       controller.addDrawables([imageDrawable]);
     } catch (e) {
       print('Error adding image: $e');
+    }
+  }
+
+  // ===== Save image =====
+
+  Future<Uint8List?> exportImage(String path, double scale) async {
+    try {
+      if (canvasSize == null) {
+        print('Cannot export: canvas size is null');
+        return null;
+      }
+
+      // If canvas size is too small, create a larger canvas for higher quality output
+      final Size renderSize = Size(
+        canvasSize!.width * scale, // Double the width
+        canvasSize!.height * scale, // Double the height
+      );
+
+      final ui.Image renderedImage = await controller.renderImage(renderSize);
+      final Uint8List? bytes = await renderedImage.pngBytes;
+      if (path != null) {
+        final file = File(path);
+        try {
+          await file.writeAsBytes(bytes!);
+          throw Exception('Image saved to: $path');
+        } catch (e) {
+          throw Exception('Error saving image to file: $e');
+        }
+      }
+
+      return bytes;
+    } catch (e) {
+      throw Exception('Error exporting image: $e');
     }
   }
 
@@ -315,6 +349,9 @@ class _FletPainterControlState extends State<FletPainterControl> {
           newRotation: parseDouble(args["rotation"]),
           newScale: parseDouble(args["scale"]),
         );
+        break;
+      case "saveImage":
+        exportImage(args["path"], parseDouble(args["scale"]) ?? 1.0);
         break;
     }
   }

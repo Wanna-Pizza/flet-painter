@@ -43,6 +43,15 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
     layers: Optional[list] = field(default_factory=list)
     on_selected_text: ft.OptionalEventCallable["TextEvent"] = None
 
+    async def async_save_image(self, **args) -> None:
+        await self._invoke_method_async(
+            "saveImage",
+            {
+                "path": args.get("path"),
+                "scale": args.get("scale"),
+            }
+        )
+
     async def async_add_text(self, **args) -> None:
         
         await self._invoke_method_async(
@@ -109,6 +118,16 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
                 font_weight=font_weight
             )
         )
+    
+    def save_image(self, path: str = None,scale: float = None) -> None:
+        asyncio.create_task(
+            self.async_save_image(
+                path=path,
+                scale=scale
+            )
+        )
+
+
     def change_text(self,
                 text: str = None,
                 font_family: Optional[str] = None,
