@@ -1,5 +1,16 @@
 from dataclasses import dataclass, field
 from typing import Optional, Callable, Any
+
+from flet.controls.adaptive_control import AdaptiveControl
+from flet.controls.colors import Colors
+from flet.controls.text_style import TextStyle,FontWeight
+from flet.controls.constrained_control import ConstrainedControl
+from flet.controls.control import Control
+from flet.controls.base_control import control
+from flet.controls.alignment import Alignment
+from flet.controls.control_event import ControlEvent
+from flet.controls.types import OptionalControlEventCallable,OptionalEventCallable
+
 import asyncio
 
 import flet as ft
@@ -21,27 +32,27 @@ class TextWidget:
     x: Optional[float] = None
     y: Optional[float] = None
     font_size: Optional[float] = None
-    color: Optional[ft.Colors] = None
-    font_weight: Optional[ft.FontWeight] = None
+    color: Optional[Colors] = None
+    font_weight: Optional[FontWeight] = None
 
 @dataclass
-class TextEvent(ft.ControlEvent):
+class TextEvent(ControlEvent):
     value: Optional[str] = field(metadata={"data_field": "value"})
-    style: Optional[ft.TextStyle] = field(metadata={"data_field": "style"})
+    style: Optional[TextStyle] = field(metadata={"data_field": "style"})
 
 
 
 
 
 
-@ft.control("FletPainter")
-class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
+@control("FletPainter")
+class FletPainter(ConstrainedControl, AdaptiveControl):
     """
     A control that allows dropping files.
     """
     # Modify the layers type to accept any dict or list objects, not just specific classes
     layers: Optional[list] = field(default_factory=list)
-    on_selected_text: ft.OptionalEventCallable["TextEvent"] = None
+    on_selected_text: OptionalEventCallable["TextEvent"] = None
 
     async def async_save_image(self, **args) -> None:
         await self._invoke_method_async(
@@ -105,7 +116,7 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
                 x: Optional[float] = None,
                 y: Optional[float] = None,
                 font_size: Optional[float] = None,
-                color: Optional[ft.Colors] = None,
+                color: Optional[Colors] = None,
                 font_weight: Optional[str] = None) -> None:
         asyncio.create_task(
             self.async_add_text(
@@ -134,7 +145,7 @@ class FletPainter(ft.ConstrainedControl, ft.AdaptiveControl):
                 x: Optional[float] = None,
                 y: Optional[float] = None,
                 font_size: Optional[float] = None,
-                color: Optional[ft.Colors] = None) -> None:
+                color: Optional[Colors] = None) -> None:
         print(font_family)
         asyncio.create_task(
             self.async_change_text(
