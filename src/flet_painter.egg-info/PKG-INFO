@@ -9,7 +9,7 @@ Project-URL: Repository, https://github.com/Wanna-Pizza/flet-painter
 Project-URL: Issues, https://github.com/Wanna-Pizza/flet-painter/issues
 Requires-Python: >=3.9
 Description-Content-Type: text/markdown
-Requires-Dist: flet>=0.27.6
+Requires-Dist: flet==0.70.0.dev5066
 
 # flet-painter
 FletPainter control for Flet

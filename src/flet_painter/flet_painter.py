@@ -9,8 +9,10 @@ from flet.controls.control import Control
 from flet.controls.base_control import control
 from flet.controls.alignment import Alignment
 from flet.controls.control_event import ControlEvent
-from flet.controls.types import OptionalControlEventCallable,OptionalEventCallable
-
+from flet.controls.control_event import (
+    OptionalControlEventHandler,
+    OptionalEventHandler,
+)
 import asyncio
 
 import flet as ft
@@ -52,7 +54,7 @@ class FletPainter(ConstrainedControl, AdaptiveControl):
     """
     # Modify the layers type to accept any dict or list objects, not just specific classes
     layers: Optional[list] = field(default_factory=list)
-    on_selected_text: OptionalEventCallable["TextEvent"] = None
+    on_selected_text: OptionalEventHandler["TextEvent"] = None
 
     async def async_save_image(self, **args) -> None:
         await self._invoke_method_async(
