@@ -1,0 +1,21 @@
+name: flet_painter
+description: Flet FletPainter control
+repository: https://github.com/MyGithubAccount/flet-painter/src/flutter/flet_painter
+version: 0.1.0
+homepage: https://github.com/MyGithubAccount/flet-painter
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flet: 0.26.0
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  
