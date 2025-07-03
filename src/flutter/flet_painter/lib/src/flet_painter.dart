@@ -223,16 +223,6 @@ class _FletPainterControlState extends State<FletPainterControl> {
         y ?? _canvasCenter.dy,
       );
 
-      final finalScale = scale ?? 1.0;
-
-      addText(
-        text:
-            "Scale: $finalScale, Original: ${uiImage.width}x${uiImage.height}",
-        fontSize: 16.0,
-        color: Colors.white,
-        y: (y ?? _canvasCenter.dy) - 50,
-      );
-
       final imageDrawable = ImageDrawable(
         position: position,
         image: uiImage,
