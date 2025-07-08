@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-
 import 'object_drawable.dart';
 
 /// A drawable of an image as an object.
@@ -91,13 +90,18 @@ class ImageDrawable extends ObjectDrawable {
 
     if (flipped) canvas.scale(-1, 1);
 
+    // Create paint with anti-aliasing enabled for smooth image rendering
+    final paint = Paint()
+      ..isAntiAlias = true
+      ..filterQuality = FilterQuality.high;
+
     // Draw the image onto the canvas.
     canvas.drawImageRect(
         image,
         Rect.fromPoints(Offset.zero,
             Offset(image.width.toDouble(), image.height.toDouble())),
         Rect.fromPoints(position - scaledSize / 2, position + scaledSize / 2),
-        Paint());
+        paint);
   }
 
   /// Calculates the size of the rendered object.

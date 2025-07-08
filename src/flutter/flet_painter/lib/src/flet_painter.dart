@@ -425,7 +425,6 @@ class _FletPainterControlState extends State<FletPainterControl> {
         var path = args["path"];
         var scale = parseDouble(args["scale"]) ?? 1.0;
         var bytes = await exportImage(path, scale);
-        // Возвращаем результат как строку, если нужно
         return bytes != null ? "success" : "failed";
 
       case "deleteSelected":
