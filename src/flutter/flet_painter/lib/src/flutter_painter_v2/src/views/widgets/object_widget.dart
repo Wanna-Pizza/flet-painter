@@ -320,10 +320,15 @@ class _ObjectWidgetState extends State<_ObjectWidget> {
                                               ),
                                             ),
                                           ),
+
+                                          /// Top right rotation control
                                           Positioned(
-                                            top: objectPadding - (controlsSize),
-                                            right:
-                                                objectPadding - (controlsSize),
+                                            // Размещаем в центре по горизонтали
+                                            left: (size.width / 2) -
+                                                (controlsSize / 2),
+                                            // Размещаем над объектом
+                                            top: objectPadding -
+                                                (controlsSize * 2),
                                             width: controlsSize,
                                             height: controlsSize,
                                             child: MouseRegion(
@@ -350,6 +355,8 @@ class _ObjectWidgetState extends State<_ObjectWidget> {
                                               ),
                                             ),
                                           ),
+
+                                          /// top right rotation control
                                           Positioned(
                                             bottom:
                                                 objectPadding - (controlsSize),
