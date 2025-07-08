@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flet/flet.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flet_painter/src/flutter_painter_v2/flutter_painter.dart';
@@ -113,6 +112,46 @@ class _FletPainterControlState extends State<FletPainterControl> {
     return Offset(canvasSize!.width / 2, canvasSize!.height / 2);
   }
 
+  // ===== Text Style Helper Methods =====
+
+  TextStyle _createTextStyle({
+    String? fontFamily,
+    double? fontSize,
+    Color? color,
+    FontWeight? fontWeight,
+  }) {
+    // Try to get the style from Flet's text system first
+    TextStyle? style;
+    if (fontFamily != null) {
+      try {
+        style = getTextStyle(context, fontFamily);
+      } catch (e) {
+        debugPrint(
+            "Font family '$fontFamily' not found in theme, using default");
+        style = null;
+      }
+    }
+
+    // If no style found or no font family specified, create basic style
+    if (style == null) {
+      style = TextStyle(
+        fontFamily: fontFamily ?? _defaultFontFamily,
+        fontSize: fontSize ?? _defaultFontSize,
+        color: color ?? Colors.black,
+        fontWeight: fontWeight ?? FontWeight.normal,
+      );
+    } else {
+      // Merge with existing style
+      style = style.copyWith(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+      );
+    }
+
+    return style;
+  }
+
   // ===== Text Handling Methods =====
 
   void addText({
@@ -132,11 +171,11 @@ class _FletPainterControlState extends State<FletPainterControl> {
     final textDrawable = TextDrawable(
       position: position,
       text: text ?? defaultText,
-      style: GoogleFonts.getFont(
-        fontFamily ?? _defaultFontFamily,
-        fontSize: fontSize ?? _defaultFontSize,
-        color: color ?? Colors.black,
-        fontWeight: fontWeight ?? FontWeight.normal,
+      style: _createTextStyle(
+        fontFamily: fontFamily,
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
       ),
     );
 
@@ -164,15 +203,15 @@ class _FletPainterControlState extends State<FletPainterControl> {
 
       TextStyle updatedStyle;
       if (newFontFamily != null) {
-        // rebuild style with new font family
-        updatedStyle = GoogleFonts.getFont(
-          newFontFamily,
+        // Create new style with new font family
+        updatedStyle = _createTextStyle(
+          fontFamily: newFontFamily,
           fontSize: newFontSize ?? baseStyle.fontSize,
           color: newColor ?? baseStyle.color,
           fontWeight: newFontWeight ?? baseStyle.fontWeight,
         );
       } else {
-        // preserve existing font family, apply other changes
+        // Preserve existing font family, apply other changes
         updatedStyle = baseStyle.copyWith(
           color: newColor,
           fontSize: newFontSize,
@@ -310,6 +349,7 @@ class _FletPainterControlState extends State<FletPainterControl> {
       defaultText = layer["text"] ?? defaultText;
       addText(
         text: defaultText,
+        fontFamily: layer["fontFamily"],
         color: parseColor(Theme.of(context), layer["color"]),
         fontSize: parseDouble(layer["fontSize"]),
         fontWeight: getFontWeight(layer["fontWeight"]),
@@ -319,7 +359,7 @@ class _FletPainterControlState extends State<FletPainterControl> {
         path: layer["path"] ?? "",
         x: parseDouble(layer["x"]),
         y: parseDouble(layer["y"]),
-        scale: parseDouble(layer["scale"]), // Добавляем scale параметр
+        scale: parseDouble(layer["scale"]),
       );
     }
 
@@ -365,8 +405,7 @@ class _FletPainterControlState extends State<FletPainterControl> {
           path: args["path"] ?? "",
           x: parseDouble(args["x"]),
           y: parseDouble(args["y"]),
-          scale: parseDouble(args[
-              "scale"]), // Убираем ?? 1.0 чтобы передать null если не задан
+          scale: parseDouble(args["scale"]),
         );
         break;
 
@@ -405,9 +444,6 @@ class _FletPainterControlState extends State<FletPainterControl> {
 
   @override
   Widget build(BuildContext context) {
-    // Убираем старую подписку на методы
-    // widget.control.onInvokeMethodListener = _handleInvokeMethod;
-
     return constrainedControl(
       context,
       LayoutBuilder(
