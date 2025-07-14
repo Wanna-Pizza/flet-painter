@@ -89,6 +89,17 @@ class _FletPainterControlState extends State<FletPainterControl> {
         .triggerControlEvent(widget.control.id, name, data?.toString() ?? "");
   }
 
+  void _sendTextDoubleTapped() {
+    final selectedDrawable = controller.selectedObjectDrawable;
+
+    if (selectedDrawable is TextDrawable) {
+      _sendEvent("on_text_double_tap", {
+        "value": selectedDrawable.text,
+        "style": selectedDrawable.style,
+      });
+    }
+  }
+
   void _sendSelectedTextInfo() {
     final selectedDrawable = controller.selectedObjectDrawable;
 
@@ -510,6 +521,9 @@ class _FletPainterControlState extends State<FletPainterControl> {
         onSelectedObjectDrawableChanged: (drawable) {
           _sendSelectedTextInfo();
           _focusNode.requestFocus();
+        },
+        onTextDoubleTapped: () {
+          _sendTextDoubleTapped();
         },
       ),
     );

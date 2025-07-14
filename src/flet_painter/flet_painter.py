@@ -69,6 +69,7 @@ class FletPainter(ConstrainedControl, AdaptiveControl):
         # FletPainter specific
         layers: Optional[List[Dict[str, Any]]] = None,
         on_selected_text: Optional[Callable[[TextEvent], None]] = None,
+        on_text_double_tap: Optional[Callable[[TextEvent], None]] = None,
         #
         # ConstrainedControl and AdaptiveControl
         #
@@ -139,10 +140,13 @@ class FletPainter(ConstrainedControl, AdaptiveControl):
         # Event handlers setup
         self.__on_selected_text = EventHandler(lambda e: TextEvent(e))
         self._add_event_handler("selected_text", self.__on_selected_text.get_handler())
+        self.__on_text_double_tap = EventHandler(lambda e: TextEvent(e))
+        self._add_event_handler("text_double_tap", self.__on_text_double_tap.get_handler())
 
         # Properties
         self.layers = layers
         self.on_selected_text = on_selected_text
+        self.on_text_double_tap = on_text_double_tap
 
     def _get_control_name(self):
         return "flet_painter"
@@ -263,3 +267,12 @@ class FletPainter(ConstrainedControl, AdaptiveControl):
     @on_selected_text.setter
     def on_selected_text(self, handler: Optional[Callable[[TextEvent], None]]):
         self.__on_selected_text.handler = handler
+
+    # on_text_double_tap
+    @property
+    def on_text_double_tap(self) -> Optional[Callable[[TextEvent], None]]:
+        return self.__on_text_double_tap.handler
+
+    @on_text_double_tap.setter
+    def on_text_double_tap(self, handler: Optional[Callable[[TextEvent], None]]):
+        self.__on_text_double_tap.handler = handler

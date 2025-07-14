@@ -60,15 +60,19 @@ class FlutterPainter extends StatelessWidget {
   /// UI around [_FlutterPainterWidget], which gets re-built automatically when necessary.
   final FlutterPainterBuilderCallback _builder;
 
+  /// Callback when a text drawable is double-tapped.
+  final VoidCallback? onTextDoubleTapped;
+
   /// Creates a [FlutterPainter] with the given [controller] and optional callbacks.
-  const FlutterPainter(
-      {Key? key,
-      required this.controller,
-      this.onDrawableCreated,
-      this.onDrawableDeleted,
-      this.onSelectedObjectDrawableChanged,
-      this.onPainterSettingsChanged})
-      : _builder = _defaultBuilder,
+  const FlutterPainter({
+    Key? key,
+    required this.controller,
+    this.onDrawableCreated,
+    this.onDrawableDeleted,
+    this.onSelectedObjectDrawableChanged,
+    this.onPainterSettingsChanged,
+    this.onTextDoubleTapped,
+  })  : _builder = _defaultBuilder,
         super(key: key);
 
   /// Creates a [FlutterPainter] with the given [controller], [builder] and optional callbacks.
@@ -82,7 +86,8 @@ class FlutterPainter extends StatelessWidget {
       this.onDrawableCreated,
       this.onDrawableDeleted,
       this.onSelectedObjectDrawableChanged,
-      this.onPainterSettingsChanged})
+      this.onPainterSettingsChanged,
+      this.onTextDoubleTapped})
       : _builder = builder,
         super(key: key);
 
@@ -103,6 +108,7 @@ class FlutterPainter extends StatelessWidget {
                   onPainterSettingsChanged: onPainterSettingsChanged,
                   onSelectedObjectDrawableChanged:
                       onSelectedObjectDrawableChanged,
+                  onTextDoubleTapped: onTextDoubleTapped,
                 ));
           }),
     );
@@ -131,6 +137,9 @@ class _FlutterPainterWidget extends StatelessWidget {
   /// Callback when the [PainterSettings] of [PainterController] are updated internally.
   final ValueChanged<PainterSettings>? onPainterSettingsChanged;
 
+  /// Callback when a text drawable is double-tapped.
+  final VoidCallback? onTextDoubleTapped;
+
   /// Creates a [_FlutterPainterWidget] with the given [controller] and optional callbacks.
   const _FlutterPainterWidget(
       {Key? key,
@@ -138,7 +147,8 @@ class _FlutterPainterWidget extends StatelessWidget {
       this.onDrawableCreated,
       this.onDrawableDeleted,
       this.onSelectedObjectDrawableChanged,
-      this.onPainterSettingsChanged})
+      this.onPainterSettingsChanged,
+      this.onTextDoubleTapped})
       : super(key: key);
 
   @override
@@ -195,6 +205,9 @@ class _FlutterPainterWidget extends StatelessWidget {
       onSelectedObjectDrawableChanged?.call(notification.drawable);
     } else if (notification is SettingsUpdatedNotification) {
       onPainterSettingsChanged?.call(notification.settings);
+    } else if (notification is ObjectDrawableReselectedNotification &&
+        notification.drawable is TextDrawable) {
+      onTextDoubleTapped?.call();
     }
     return true;
   }

@@ -200,6 +200,7 @@ class _ObjectWidgetState extends State<_ObjectWidget> {
                           child: GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => tapDrawable(drawable),
+                            onDoubleTap: () => doubleTapDrawable(drawable),
                             onScaleStart: (details) =>
                                 onDrawableScaleStart(entry, details),
                             onScaleUpdate: (details) =>
@@ -605,6 +606,18 @@ class _ObjectWidgetState extends State<_ObjectWidget> {
       // selectedDrawableIndex = drawables.indexOf(drawable);
       controller?.selectObjectDrawable(drawable);
     });
+  }
+
+  /// Callback when an object is double-tapped.
+  ///
+  /// Dispatches an [ObjectDrawableReselectedNotification] for text drawables.
+  void doubleTapDrawable(ObjectDrawable drawable) {
+    if (drawable.locked) return;
+
+    // Only handle double tap for TextDrawable
+    if (drawable is TextDrawable) {
+      ObjectDrawableReselectedNotification(drawable).dispatch(context);
+    }
   }
 
   /// Callback when the object drawable starts being moved, scaled and/or rotated.
