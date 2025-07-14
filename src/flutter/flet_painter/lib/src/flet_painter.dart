@@ -4,6 +4,7 @@ import 'package:flet/flet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flet_painter/src/flutter_painter_v2/flutter_painter.dart';
+import 'dart:convert';
 
 class FletPainterControl extends StatefulWidget {
   final Control? parent;
@@ -93,7 +94,8 @@ class _FletPainterControlState extends State<FletPainterControl> {
     final selectedDrawable = controller.selectedObjectDrawable;
 
     if (selectedDrawable is TextDrawable) {
-      _sendEvent("on_text_double_tap", {"value": selectedDrawable.text});
+      final data = {"value": selectedDrawable.text};
+      _sendEvent("on_text_double_tap", jsonEncode(data));
     }
   }
 
