@@ -379,13 +379,20 @@ class _FletPainterControlState extends State<FletPainterControl> {
   // ===== Deletion Methods =====
 
   void deleteSelected() {
+    debugPrint('deleteSelected() called');
     final selectedDrawable = controller.selectedObjectDrawable;
+    debugPrint('Selected drawable: $selectedDrawable');
+
     if (selectedDrawable != null) {
+      debugPrint('Removing drawable...');
       setState(() {
         controller.removeDrawable(selectedDrawable);
       });
       // Restore focus after deletion
       _focusNode.requestFocus();
+      debugPrint('Drawable removed successfully');
+    } else {
+      debugPrint('No drawable selected to delete');
     }
   }
 
@@ -470,19 +477,35 @@ class _FletPainterControlState extends State<FletPainterControl> {
     return Focus(
       focusNode: _focusNode,
       autofocus: true,
+      canRequestFocus: true,
+      descendantsAreFocusable: true,
       onKeyEvent: _handleKeyEvent,
       child: _buildShortcutsWrapper(),
     );
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent) {
+      debugPrint(
+          'Key pressed: ${event.logicalKey}, Control: ${HardwareKeyboard.instance.isControlPressed}, Meta: ${HardwareKeyboard.instance.isMetaPressed}');
+    }
+
     if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.keyX &&
         (HardwareKeyboard.instance.isControlPressed ||
             HardwareKeyboard.instance.isMetaPressed)) {
+      debugPrint('Ctrl+X detected, calling deleteSelected()');
       deleteSelected();
       return KeyEventResult.handled;
     }
+
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.delete) {
+      debugPrint('Delete key detected, calling deleteSelected()');
+      deleteSelected();
+      return KeyEventResult.handled;
+    }
+
     return KeyEventResult.ignored;
   }
 
@@ -493,6 +516,8 @@ class _FletPainterControlState extends State<FletPainterControl> {
             const DeleteIntent(),
         LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyX):
             const DeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.delete): const DeleteIntent(),
+        LogicalKeySet(LogicalKeyboardKey.backspace): const DeleteIntent(),
       },
       child: _buildActionsWrapper(),
     );
@@ -503,6 +528,7 @@ class _FletPainterControlState extends State<FletPainterControl> {
       actions: <Type, Action<Intent>>{
         DeleteIntent: CallbackAction<DeleteIntent>(
           onInvoke: (intent) {
+            debugPrint('DeleteIntent triggered');
             deleteSelected();
             return null;
           },
@@ -514,12 +540,17 @@ class _FletPainterControlState extends State<FletPainterControl> {
 
   Widget _buildPainter() {
     return GestureDetector(
-      onTap: () => _focusNode.requestFocus(),
+      onTap: () {
+        debugPrint('Canvas tapped, requesting focus');
+        _focusNode.requestFocus();
+      },
       child: FlutterPainter(
         controller: controller,
         onSelectedObjectDrawableChanged: (drawable) {
+          debugPrint('Selected object changed: $drawable');
           _sendSelectedTextInfo();
-          _focusNode.requestFocus();
+          // Убедимся что фокус у нас
+          Future.microtask(() => _focusNode.requestFocus());
         },
         onTextDoubleTapped: () {
           _sendTextDoubleTapped();
