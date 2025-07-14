@@ -93,10 +93,7 @@ class _FletPainterControlState extends State<FletPainterControl> {
     final selectedDrawable = controller.selectedObjectDrawable;
 
     if (selectedDrawable is TextDrawable) {
-      _sendEvent("on_text_double_tap", {
-        "value": selectedDrawable.text,
-        "style": selectedDrawable.style,
-      });
+      _sendEvent("on_text_double_tap", {"value": selectedDrawable.text});
     }
   }
 

@@ -141,7 +141,7 @@ class FletPainter(ConstrainedControl, AdaptiveControl):
         self.__on_selected_text = EventHandler(lambda e: TextEvent(e))
         self._add_event_handler("selected_text", self.__on_selected_text.get_handler())
         self.__on_text_double_tap = EventHandler(lambda e: TextEvent(e))
-        self._add_event_handler("text_double_tap", self.__on_text_double_tap.get_handler())
+        self._add_event_handler("on_text_double_tap", self.__on_text_double_tap.get_handler())
 
         # Properties
         self.layers = layers
