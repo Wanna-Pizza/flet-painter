@@ -444,6 +444,16 @@ class _FletPainterControlState extends State<FletPainterControl> {
         var bytes = await exportImage(path, scale);
         return bytes != null ? "success" : "failed";
 
+      case "saveImageBytes":
+        var scale = parseDouble(args["scale"]) ?? 1.0;
+        var bytes = await exportImage(null, scale);
+        if (bytes != null) {
+          _sendEvent("on_save", base64Encode(bytes));
+          return "success";
+        } else {
+          return "failed";
+        }
+
       case "deleteSelected":
         deleteSelected();
         break;
